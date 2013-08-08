@@ -15,5 +15,6 @@
     <modules>
         <module>ear</module>
         <module>mdp</module>
+        <module>web</module>
     </modules>
 </project>
