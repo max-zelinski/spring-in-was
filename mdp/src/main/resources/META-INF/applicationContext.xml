@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd">
+    <context:annotation-config />
+
+    <jee:jndi-lookup id="connectionFactory" jndi-name="jms/cf/MQ" />
+    <jee:jndi-lookup id="requestInDestination" jndi-name="jms/queues/Request.IN" />
+    <jee:jndi-lookup id="requestOutDestination" jndi-name="jms/queues/Request.OUT" />
+
+    <bean id="mdp" class="org.springframework.jms.listener.adapter.MessageListenerAdapter" >
+        <constructor-arg>
+            <bean class="ru.smply.was.spring.mdp.MDP">
+                <property name="jmsTemplate" ref="jmsTemplate" />
+                <property name="requestOut" ref="requestOutDestination" />
+            </bean>
+        </constructor-arg>
+        <property name="defaultListenerMethod" value="onMessage" />
+    </bean>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory"/>
+    </bean>
+
+    <bean id="requestInListener" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory"/>
+        <property name="destination" ref="requestInDestination"/>
+        <property name="messageListener" ref="mdp" />
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+</beans>
